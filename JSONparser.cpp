@@ -156,7 +156,7 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 			is_key = true;
 			const int SIZE = tokens[i].size;
 			std::string objKey = currentKey;
-			r[objKey].type = JSON_OBJECT;
+			r[objKey].type = VAR_OBJECT;
 			int self_token = i;
 			while (i + 1 < tokens.size() && tokens[i+1].parent == self_token) {
 				i++;
