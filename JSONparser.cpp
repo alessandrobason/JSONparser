@@ -156,6 +156,7 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 			is_key = true;
 			const int SIZE = tokens[i].size;
 			std::string objKey = currentKey;
+			r[objKey].type = JSON_OBJECT;
 			int self_token = i;
 			while (i + 1 < tokens.size() && tokens[i+1].parent == self_token) {
 				i++;
@@ -206,6 +207,7 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 				r[arrKey].arr.push_back(vec_arr);
 			}
 			else {
+				r[currentKey].type = VAR_ARRAY;
 				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
 					i++;
 					parseData(r, i, json, is_key, true);
@@ -227,6 +229,7 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 			else if(!is_array){
 				is_key = true;
 				r[currentKey].str = s;
+				r[currentKey].type = VAR_STRING;
 			}
 			// it's an array value
 			else{
@@ -264,7 +267,8 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 				break;
 			}
 			else {
-				switch (parsePrimitive(data)) {
+				r[currentKey].type = parsePrimitive(data);
+				switch (r[currentKey].type) {
 				case VAR_INT:
 					r[currentKey].i = stoi(data);
 					break;
