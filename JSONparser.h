@@ -54,7 +54,6 @@ private:
 		int parent;
 		int start;
 		int end;
-		int size;
 	};
 
 	struct jsonparser {
@@ -64,20 +63,20 @@ private:
 	};
 
 	enum variabletypes {
-		VAR_NULL,
-		VAR_INT,
-		VAR_DOUBLE,
-		VAR_TRUE,
-		VAR_FALSE,
-		VAR_STRING,
-		VAR_ARRAY
+		VAR_NULL = 0,
+		VAR_INT = 1,
+		VAR_DOUBLE = 2,
+		VAR_TRUE = 3,
+		VAR_FALSE = 4,
+		VAR_STRING = 5,
+		VAR_ARRAY = 6,
+		VAR_OBJECT = 7
 	};
 
-	void parseData(std::map<std::string, datatypes> &r, int &i, std::string json, bool &is_key, bool is_array);
+	void parseData(std::map<std::string, datatypes>& r, int& i, std::string json, bool& is_key, bool is_array);
 	int parsePrimitive(std::string data);
 
 	std::vector<jsontoken> tokens;
 	jsonparser parser = { 0, 0, 0 };
 	std::string currentKey;
 };
-

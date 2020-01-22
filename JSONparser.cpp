@@ -152,30 +152,36 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 	switch(tokens[i].type){
 		case JSON_OBJECT:
 		{
-			
 			is_key = true;
-			const int SIZE = tokens[i].size;
 			std::string objKey = currentKey;
-			r[objKey].type = VAR_OBJECT;
 			int self_token = i;
-			while (i + 1 < tokens.size() && tokens[i+1].parent == self_token) {
-				i++;
-				parseData(r[objKey].obj, i, json, is_key, false);
+
+			if (is_array) {
+				datatypes dt;
+				dt.type = VAR_OBJECT;
+				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
+					i++;
+					parseData(dt.obj, i, json, is_key, false);
+				}
+				r[objKey].arr.push_back(dt);
 			}
+			else {
+				r[objKey].type = VAR_OBJECT;
+				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
+					i++;
+					parseData(r[objKey].obj, i, json, is_key, false);
+				}
+			}
+			
 			break;
 		}
 		case JSON_ARRAY:
 		{
 			int self_token = i; 
 			if (is_array) {
-				/*
-				create map with only current array
-								
-				
-				*/
+				// create a temporary map to store current array
 				std::string arrKey = currentKey;
 				std::map<std::string, datatypes> temp;
-				//temp[arrKey] = r[arrKey];
 				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
 					i++;
 					parseData(temp, i, json, is_key, true);
@@ -183,7 +189,7 @@ void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::str
 
 				datatypes vec_arr;
 				vec_arr.type = VAR_ARRAY;
-				
+				// copy the data from the temp map to the final
 				for (int k = 0; k < temp[arrKey].arr.size(); k++) {
 					datatypes dt;
 					dt.type = temp[arrKey].arr[k].type;
