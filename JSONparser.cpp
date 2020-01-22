@@ -20,55 +20,22 @@ struct parser:
 
 */
 
-JSONparser::JSONparser() {
-	//const char* json = "{ \"ciao\": {\"bitch\": 2} }";
-	//const char* json = "{\"ciao\": {\"bitch\": 2, \"scemo\": {\"aiuto\": 12} } }";
-	//const char* json = "{\"ciao\":2}";
-	//std::string json = "{\"ci5ao\":2}";
-	//std::string json = "{\"a\":{\"b\":2.3, \"c\":4, \"d\":{\"f\":12}}}, \"e\":3}";
-	std::string json = ""
-
-	/*
-	"{"
-		"\"glossary\": \"bella zio\""
-	"}";
-	*/
-
-	"{"
-	    "\"glossary\": {"
-	        "\"title\": true,"
-			"\"GlossDiv\": {"
-	            "\"title\": \"S\","
-				"\"GlossList\": {"
-	                "\"GlossEntry\": {"
-	                    "\"ID\": \"SGML\","
-						"\"SortAs\": \"SGML\","
-						"\"GlossTerm\": \"Standard Generalized Markup Language\","
-						"\"Acronym\": \"SGML\","
-						"\"Abbrev\": \"ISO 8879:1986\","
-						"\"GlossDef\": {"
-	                        "\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\""
-	                    "},"
-						"\"GlossSee\": \"markup\""
-	                "}"
-	            "}"
-	        "}"
-	    "}"
-	"}";
-	std::cout << json << std::endl;
-	readJSON(json);
+JSONparser::JSONparser(const std::string path) {
+	readJSON(path);
 }
 
 JSONparser::~JSONparser() {
 
 }
 
-void JSONparser::readJSON(const std::string json) {
+void JSONparser::readJSON(const std::string path) {
+	std::string json = "";
 
-	for (; parser.pos < json.length(); parser.pos++) {
-		char c;
-		c = json[parser.pos];
+	std::ifstream is(path);
+	char c;
 
+	while (is.get(c)) {
+		json += c;
 		switch (c) {
 		case '{':
 			// check if the token before was a primitive
@@ -77,7 +44,7 @@ void JSONparser::readJSON(const std::string json) {
 				parser.super_token = tokens[parser.next_token - 1].parent;
 			}
 			// create OBJECT token
-			tokens.push_back({ JSON_OBJECT, parser.super_token, parser.pos, 0, 1 });
+			tokens.push_back({ JSON_OBJECT, parser.super_token, parser.pos, 0 });
 			// set the super token for next objects
 			parser.super_token = parser.next_token;
 			parser.next_token++;
@@ -94,6 +61,18 @@ void JSONparser::readJSON(const std::string json) {
 			parser.super_token = tokens[parser.super_token].parent;
 			break;
 		case '[':
+			tokens.push_back({JSON_ARRAY, parser.super_token, parser.pos});
+			parser.super_token = parser.next_token;
+			parser.next_token++;
+			break;
+		case ']':
+			// check if the token before was a primitive
+			if (parser.next_token > 0 && check_if_primitive()) {
+				tokens[parser.next_token - 1].end = parser.pos - 1;
+				parser.super_token = tokens[parser.next_token - 1].parent;
+			}
+			tokens[tokens[parser.next_token - 1].parent].end = parser.pos;
+			parser.super_token = tokens[tokens[parser.next_token - 1].parent].parent;
 			break;
 		case ':':
 			break;
@@ -112,7 +91,6 @@ void JSONparser::readJSON(const std::string json) {
 				tokens[parser.next_token - 1].end = parser.pos - 1;
 				parser.super_token = tokens[parser.next_token - 1].parent;
 			}
-			tokens[parser.super_token].size ++;
 			break;
 		case '0':
 		case '1':
@@ -126,41 +104,33 @@ void JSONparser::readJSON(const std::string json) {
 		case '9':
 		case 't':
 		case 'f':
-			// if the parent is NOT a key
-			// meaning that this is a key
-			if (tokens[parser.next_token - 1].type != JSON_STRING) {
+			// if its not an array check if its still an open variable (string/primitive)
+			if (tokens[parser.next_token - 1].type != JSON_ARRAY && tokens[parser.next_token - 1].end == 0) {
 				break;
 			}
-			// if the previous token is an open string
-			if (tokens[parser.next_token - 1].type == JSON_STRING && tokens[parser.next_token - 1].end == 0) {
-				break;
-			}
-			// if the previous token is a primitive, meaning that this is still a number
-			if (tokens[parser.next_token - 1].type == JSON_PRIMITIVE) {
-				break;
-			}
-
+			
 			tokens.push_back({ JSON_PRIMITIVE, parser.super_token, parser.pos });
 			parser.next_token++;
-			break;
-		case '\0':
 			break;
 		default:
 			break;
 		}
+		parser.pos++;
 	}
 
 	/*
+	std::cout << "i\tt\tp\ts\te\tsz\n";
 	for(int i=0; i<tokens.size(); i++){
 		jsontype type;
 		int parent;
 		int start;
 		int end;
 		int size;
-		std::cout << tokens[i].type << " ";
-		std::cout << tokens[i].parent << " ";
-		std::cout << tokens[i].start << " ";
-		std::cout << tokens[i].end << " ";
+		std::cout << i << "\t";
+		std::cout << tokens[i].type << "\t";
+		std::cout << tokens[i].parent << "\t";
+		std::cout << tokens[i].start << "\t";
+		std::cout << tokens[i].end << "\t";
 		std::cout << tokens[i].size << "\n";
 	}
 	*/
@@ -168,17 +138,13 @@ void JSONparser::readJSON(const std::string json) {
 	bool is_key = true;
 	bool is_array = false;
 
-	// std::map<keytypes, datatypes, comptypes> dict;
-
-	for (int i = 1; i < parser.next_token; i++) {
-		datatypes data;
-		parseData(result, i, json, is_key, is_array);
+	for (int i = 1; i < tokens.size(); i++) {
+		parseData(doc, i, json, is_key, false);
 	}
 
-	std::cout << "->" << result["glossary"].obj["GlossDiv"].obj["GlossList"].obj["GlossEntry"].obj["GlossDef"].obj["para"].str << "\n";
 }
 
-void JSONparser::parseData(std::map<std::string, datatypes> &r, int &i, std::string json, bool &is_key, bool &is_array) {
+void JSONparser::parseData(std::map<std::string, datatypes>& r, int& i, std::string json, bool& is_key, bool is_array) {
 	int start = tokens[i].start;
 	int end = tokens[i].end;
 	int len = end - start + 1;
@@ -186,18 +152,68 @@ void JSONparser::parseData(std::map<std::string, datatypes> &r, int &i, std::str
 	switch(tokens[i].type){
 		case JSON_OBJECT:
 		{
+			
 			is_key = true;
 			const int SIZE = tokens[i].size;
 			std::string objKey = currentKey;
-			for(int j=0; j<SIZE*2; j++){
-				i ++;
-				parseData(r[objKey].obj, i, json, is_key, is_array);
+			int self_token = i;
+			while (i + 1 < tokens.size() && tokens[i+1].parent == self_token) {
+				i++;
+				parseData(r[objKey].obj, i, json, is_key, false);
 			}
-
 			break;
 		}
 		case JSON_ARRAY:
+		{
+			int self_token = i; 
+			if (is_array) {
+				/*
+				create map with only current array
+								
+				
+				*/
+				std::string arrKey = currentKey;
+				std::map<std::string, datatypes> temp;
+				//temp[arrKey] = r[arrKey];
+				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
+					i++;
+					parseData(temp, i, json, is_key, true);
+				}
+
+				datatypes vec_arr;
+				vec_arr.type = VAR_ARRAY;
+				
+				for (int k = 0; k < temp[arrKey].arr.size(); k++) {
+					datatypes dt;
+					dt.type = temp[arrKey].arr[k].type;
+					switch (dt.type) {
+					case VAR_INT:
+						dt.i = temp[arrKey].arr[k].i;
+						break;
+					case VAR_DOUBLE:
+						dt.d = temp[arrKey].arr[k].d;
+						break;
+					case VAR_TRUE:
+					case VAR_FALSE:
+						dt.b = temp[arrKey].arr[k].b;
+						break;
+					case VAR_STRING:
+						dt.str = temp[arrKey].arr[k].str;
+						break;
+					}
+					vec_arr.arr.push_back(dt);
+				}
+				r[arrKey].arr.push_back(vec_arr);
+			}
+			else {
+				while (i + 1 < tokens.size() && tokens[i + 1].parent == self_token) {
+					i++;
+					parseData(r, i, json, is_key, true);
+				}
+			}
+			
 			break;
+		}
 		case JSON_STRING:
 		{
 			std::string s = json.substr(start+1, len-2);
@@ -208,44 +224,65 @@ void JSONparser::parseData(std::map<std::string, datatypes> &r, int &i, std::str
 				r[currentKey];
 			}
 			// it's data
-			else if(!is_array){	
+			else if(!is_array){
 				is_key = true;
-				r[currentKey].str = json.substr(start+1, len-2);
+				r[currentKey].str = s;
 			}
 			// it's an array value
 			else{
+				datatypes at;
+				at.str = s;
+				at.type = VAR_STRING;
+				r[currentKey].arr.push_back(at);
 			}
 			break;
 		}
 		case JSON_PRIMITIVE:
 		{
 			std::string data = json.substr(start, len);
-			datatypes dat;
 
-			bool fin = false;
-
-			for(int j=0; j<data.length() && !fin; j++){
-				char c = data[j];
-				switch(c){
-					case 't':
-						dat.b = true;
-						fin = true;
-						break;
-					case 'f':
-						dat.b = false;
-						fin = true;
-						break;
-					case '.':
-						dat.d = stod(data);
-						fin = true;
-						break;
+			if (is_array) {
+				datatypes dt;
+				dt.type = parsePrimitive(data);
+				switch (dt.type) {
+				case VAR_INT:
+					dt.i = stoi(data);
+					break;
+				case VAR_DOUBLE:
+					dt.d = stod(data);
+					break;
+				case VAR_TRUE:
+					dt.b = true;
+					break;
+				case VAR_FALSE:
+					dt.b = false;
+					break;
+				default:
+					break;
 				}
+				r[currentKey].arr.push_back(dt);
+				break;
 			}
-			if(!fin) dat.i = stoi(data);
-
-			r[currentKey] = dat;
-			is_key = true;
-			break;
+			else {
+				switch (parsePrimitive(data)) {
+				case VAR_INT:
+					r[currentKey].i = stoi(data);
+					break;
+				case VAR_DOUBLE:
+					r[currentKey].d = stod(data);
+					break;
+				case VAR_TRUE:
+					r[currentKey].b = true;
+					break;
+				case VAR_FALSE:
+					r[currentKey].b = false;
+					break;
+				default:
+					break;
+				}
+				is_key = true;
+				break;
+			}
 		}
 	}
 }
@@ -253,4 +290,25 @@ void JSONparser::parseData(std::map<std::string, datatypes> &r, int &i, std::str
 bool JSONparser::check_if_primitive() {
 	// check if the token before is a primitive and if it's not finished
 	return (tokens[parser.next_token - 1].type == JSON_PRIMITIVE && tokens[parser.next_token - 1].end == 0);
+}
+
+int JSONparser::parsePrimitive(std::string data) {
+	for (int j = 0; j < data.length(); j++) {
+		char c = data[j];
+		switch (c) {
+		case 't':
+			return VAR_TRUE;
+			//r[currentKey].b = true;
+			break;
+		case 'f':
+			return VAR_FALSE;
+			//r[currentKey].b = false;
+			break;
+		case '.':
+			return VAR_DOUBLE;
+			//r[currentKey].d = stod(data);
+			break;
+		}
+	}
+	return VAR_INT;
 }
