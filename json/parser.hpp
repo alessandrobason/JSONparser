@@ -8,8 +8,6 @@
 
 namespace json {
 
-    std::string fromFile(std::string file);
-    
     class Parser {
     public:
         Value parse(std::string jsonstring);

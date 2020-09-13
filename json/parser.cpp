@@ -1,21 +1,16 @@
 #include "parser.hpp"
 #include "deserializer.hpp"
 #include <iostream>
-#include <fstream>
-#include <sstream>
 
 namespace json {
 
-    std::string fromFile(std::string path) {
-        std::ifstream file = std::ifstream(path);
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
-    }
-
     /* Parse the json, returns false if failed */
     Value Parser::parse(std::string jsonstring) {
+        // reset all values
         text = jsonstring;
+        tokens.clear();
+        start = 0;
+        current = 0;
 
         if(text == "") {
             std::cout << "No json string given\n";
@@ -77,7 +72,6 @@ namespace json {
         #endif
         tokens.push_back(Token(type, start, current));
     }
-
     
     bool Parser::isDigit(char c) {
         return c >= '0' && c <= '9';
@@ -92,7 +86,7 @@ namespace json {
     void Parser::addNumber() {
         // find the end of the number
         for(; isDigit(peek()); current++);
-
+        // if there's a dot, check if it has decimals
         if(peek() == '.' && isDigit(peekNext()))
             for(current++; isDigit(peek()); current++);
 
@@ -122,8 +116,12 @@ namespace json {
     }
 
     void Parser::addOther() {
+        // find the end of the string
         for(; isAlpha(peek()); current++);
+
         std::string other = text.substr(start, current-start);
+        // check if the string found is a valid json value
+        // [ true, false, null ]
         if(other == "true" || other == "false")
             addToken(TokenType::BOOLEAN);
         else if(other == "null")

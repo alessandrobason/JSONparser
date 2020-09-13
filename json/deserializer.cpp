@@ -5,6 +5,8 @@
 namespace json {
 
     Value Deserializer::run() {
+        // check if the first token is a {, otherwise print error
+        // and return null
         if(tokens[current].type == TokenType::LEFT_BRACE) {
             return createObject();
         }
@@ -15,13 +17,8 @@ namespace json {
     }
 
     Value Deserializer::createObject() {
-        Value result = std::map<std::string, Value>();
-        
-        /*
-        DOUBLE_QUOTES, NUMBER, STRING,
-        BOOLEAN, JSONNULL
-        */
-
+        // create empty object
+        Value result = Object();
         
         // recurse until it finishes object
         while(tokens[current].type != TokenType::RIGHT_BRACE) {
@@ -64,8 +61,8 @@ namespace json {
         return tokens[current].as_string(text) == "true";
     }
 
-    std::vector<Value> Deserializer::createArray() {
-        std::vector<Value> result;
+    Array Deserializer::createArray() {
+        Array result;
 
         while(tokens[++current].type != TokenType::RIGHT_BRACKET) {
             // check what type the value is

@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "typedefs.hpp"
 
 namespace json {
 
@@ -29,8 +30,8 @@ namespace json {
             bool b;
         };
         std::string str;
-        std::vector<Value> arr;
-        std::map<std::string, Value> obj;
+        Array arr;
+        Object obj;
         valueType type;
         
     public:
@@ -55,13 +56,13 @@ namespace json {
         Value(std::initializer_list<Value> arr) : 
         arr(arr), type(valueType::ARRAY) {}
 
-        Value(std::vector<Value> arr) : 
+        Value(Array arr) : 
         arr(arr), type(valueType::ARRAY) {}
 
         Value(std::initializer_list<std::pair<const std::string, Value>> obj) :
         obj(obj), type(valueType::OBJECT) {}
 
-        Value(std::map<std::string, Value> obj) :
+        Value(Object obj) :
         obj(obj), type(valueType::OBJECT) {}
 
         Value& operator[](std::string key) {

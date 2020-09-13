@@ -3,6 +3,7 @@
 #include <string>
 #include "token.hpp"
 #include "value.hpp"
+#include "typedefs.hpp"
 
 namespace json {
 
@@ -21,7 +22,7 @@ namespace json {
         std::string createString();
         double createNumber();
         bool createBoolean();
-        std::vector<Value> createArray();
+        Array createArray();
 
         size_t current = 0;
         std::vector<Token>& tokens;
