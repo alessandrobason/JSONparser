@@ -5,7 +5,7 @@ A json parser with STL-like api
 Read from json
 ```cpp
 #include <iostream>
-#include "json/json.hpp"
+#include "json.hpp"
 
 int main() {
     // create parser object
@@ -18,14 +18,15 @@ int main() {
     // pretty print the json
     std::cout << v.to_string() << "\n";
     // get specific value with a STL-like api
-    std::cout << "->" << v["widget"]["window"]["array"][4]["fuck"].as_string() << "\n";
+    std::cout << "->" << v["widget"]["window"]["array"][4]["hello"].as_string() << "\n";
 }
 ```
 
 Write to json
 ```cpp
 #include <iostream>
-#include "json/json.hpp"
+#include <fstream>
+#include "json.hpp"
 
 int main() {
     // create parser object
@@ -49,5 +50,8 @@ int main() {
     };
     // pretty print json
     std::cout << v.to_string() << "\n";
+    // write to file
+    std::ofstream out("output.json");
+    out << v.to_string();
 }
 ```

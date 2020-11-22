@@ -1,5 +1,6 @@
 #include <iostream>
-#include "json/json.hpp"
+#include <fstream>
+#include "../src/json.hpp"
 
 int main() {
     // create parser object
@@ -23,4 +24,7 @@ int main() {
     };
     // pretty print json
     std::cout << v.to_string() << "\n";
+    // write to file
+    std::ofstream out("output.json");
+    out << v.to_string();
 }

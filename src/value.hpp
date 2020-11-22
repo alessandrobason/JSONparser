@@ -98,6 +98,7 @@ namespace json {
                 case valueType::ARRAY:      return printArray(tabs); 
                 case valueType::OBJECT:     return printObject(tabs); 
             }
+            return "ERROR";
         }
 
         std::string printString() {

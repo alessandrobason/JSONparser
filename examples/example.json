@@ -6,7 +6,7 @@
 			"name": "main_window",
 			"width": 500,
 			"height": 500,
-			"array": [1, 2, "string", [1, 2], { "fuck": "police" }]
+			"array": [1, 2, "string", [1, 2], { "hello": "world" }]
 		},
 		"image": {
 			"src": "Images/Sun.png",

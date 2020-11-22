@@ -1,14 +1,14 @@
 CC = g++
 FLAGS = -std=c++14
-LIB = json/parser.cpp json/deserializer.cpp json/readfile.cpp
-OUTREAD = jreader.exe
-OUTWRITE = jwriter.exe
+LIB = src/parser.cpp src/deserializer.cpp src/readfile.cpp
+OUTREAD = jreader
+OUTWRITE = jwriter
 
 read:
-	$(CC) $(FLAGS) -o $(OUTREAD) example-read.cpp $(LIB)
+	$(CC) $(FLAGS) -o $(OUTREAD) examples/read.cpp $(LIB)
 
 write:
-	$(CC) $(FLAGS) -o $(OUTWRITE) example-write.cpp $(LIB)
+	$(CC) $(FLAGS) -o $(OUTWRITE) examples/write.cpp $(LIB)
 
 clean:
 	rm $(OUTREAD) $(OUTWRITE)
