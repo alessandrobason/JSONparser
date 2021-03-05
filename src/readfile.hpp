@@ -2,5 +2,5 @@
 #include <string>
 
 namespace json {
-    std::string fromFile(std::string file);
+    std::string fromFile(const std::string &file);
 }

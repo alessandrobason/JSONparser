@@ -11,22 +11,22 @@ namespace json {
         NUMBER, BOOL, STRING, ARRAY, OBJECT
     };
 
-    constexpr const char* valueTypeToString(valueType type) {
-        switch(type) {
-            case valueType::JSONNULL: return "NULL";
-            case valueType::NUMBER:   return "NUMBER";
-            case valueType::BOOL:     return "BOOL";
-            case valueType::STRING:   return "STRING";
-            case valueType::ARRAY:    return "ARRAY";
-            case valueType::OBJECT:   return "OBJECT";
-        }
-        return "ERROR";
-    }
+//    constexpr const char* valueTypeToString(valueType type) {
+//        switch(type) {
+//            case valueType::JSONNULL: return "NULL";
+//            case valueType::NUMBER:   return "NUMBER";
+//            case valueType::BOOL:     return "BOOL";
+//            case valueType::STRING:   return "STRING";
+//            case valueType::ARRAY:    return "ARRAY";
+//            case valueType::OBJECT:   return "OBJECT";
+//        }
+//        return "ERROR";
+//    }
 
     class Value {
         // wrap POD in union
         union {
-            double d;
+            double d = 0.0;
             bool b;
         };
         std::string str;
@@ -73,27 +73,35 @@ namespace json {
             return arr[index];
         }
 
-        double as_number() {
+        double &as_number() {
             return d;
         }
 
-        bool as_bool() {
+        bool &as_bool() {
             return b;
         }
 
-        std::string as_string() {
+        std::string &as_string() {
             return str;
+        }
+
+        Array &as_array() {
+            return arr;
+        }
+
+        Object &as_object() {
+            return obj;
         }
 
         valueType getType() {
             return type;
         }
 
-        std::string to_string(unsigned int tabs = 1) {
+        std::string to_string(unsigned int tabs = 1) const {
             switch(type) {
                 case valueType::JSONNULL:   return "null"; 
                 case valueType::NUMBER:     return std::to_string(d); 
-                case valueType::BOOL:       return std::to_string(b); 
+                case valueType::BOOL:       return b ? "true" : "false"; 
                 case valueType::STRING:     return printString(); 
                 case valueType::ARRAY:      return printArray(tabs); 
                 case valueType::OBJECT:     return printObject(tabs); 
@@ -101,11 +109,11 @@ namespace json {
             return "ERROR";
         }
 
-        std::string printString() {
+        std::string printString() const {
             return "\"" + str + "\"";
         }
 
-        std::string printArray(unsigned int& tabs) {
+        std::string printArray(unsigned int& tabs) const {
             std::string result = "[ ";
             for(Value v: arr) 
                 result += v.to_string(tabs) + ", ";
@@ -114,7 +122,7 @@ namespace json {
             return result;
         }
 
-        std::string printObject(unsigned int& tabs) {
+        std::string printObject(unsigned int& tabs) const {
             std::string result = "{\n";
             for(auto o: obj) {
                 // print tabs [\t] before the value

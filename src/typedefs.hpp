@@ -9,5 +9,5 @@ namespace json {
 
     using Object = std::map<std::string, json::Value>;
     using Array = std::vector<json::Value>;
-    using Null = Value;
+//    using Null = Value;
 }

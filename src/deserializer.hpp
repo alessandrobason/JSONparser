@@ -15,7 +15,7 @@ namespace json {
         Value run();
 
     private:
-        bool isAtEnd();
+//        bool isAtEnd();
 
         Value createObject();
 
