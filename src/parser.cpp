@@ -5,14 +5,14 @@
 namespace json {
 
     /* Parse the json, returns false if failed */
-    Value Parser::parse(const std::string &jsonstring) {
+    Value Parser::parse(std::string jsonstring) {
         // reset all values
         text = jsonstring;
         tokens.clear();
         start = 0;
         current = 0;
 
-        if(text.empty()) {
+        if(text == "") {
             std::cout << "No json string given\n";
             return Value();
         }
@@ -70,11 +70,11 @@ namespace json {
         #ifdef JSONDEBUG
         std::cout << "adding token: " << typeToString(type) << "\n";
         #endif
-        tokens.emplace_back(type, start, current);
+        tokens.push_back(Token(type, start, current));
     }
     
     bool Parser::isDigit(char c) {
-        return (c >= '0' && c <= '9') || (c == '+' || c == '-');
+        return (c >= '0' && c <= '9') || c == '+' || c == '-';
     }
 
     bool Parser::isAlpha(char c) {
@@ -89,7 +89,7 @@ namespace json {
         // if there's a dot, check if it has decimals
         if(peek() == '.' && isDigit(peekNext()))
             for(current++; isDigit(peek()); current++);
-        if(peek() == 'e')
+        if(peek() == 'e' && isDigit(peekNext()))
             for(current++; isDigit(peek()); current++);
 
         #ifdef JSONDEBUG
@@ -145,4 +145,9 @@ namespace json {
         if(current + 1 >= text.length()) return '\0';
         return text[current+1];
     }
+
+    std::string Parser::getText() {
+        return text;
+    }
+
 }

@@ -73,7 +73,7 @@ namespace json {
                 case TokenType::BOOLEAN:        result.push_back(createBoolean());  break;
                 case TokenType::JSONNULL:       result.push_back(Value());          break;
                 case TokenType::LEFT_BRACKET:   result.push_back(createArray());    break;
-                case TokenType::COMMA:          continue;
+                case TokenType::COMMA:          continue;                           break;
 
                 default:
                     std::cout << "unexpected tokens: [ " << tokens[current].as_string(text) << " ]\n";

@@ -7,16 +7,19 @@
 #include "value.hpp"
 
 namespace json {
+
     class Parser {
     public:
-        Value parse(const std::string &jsonstring);
+        Value parse(std::string jsonstring);
+
+        std::string getText();
 
     private:
         void scanToken();
         void addToken(TokenType type);
 
-        static bool isDigit(char c);
-        static bool isAlpha(char c);
+        bool isDigit(char c);
+        bool isAlpha(char c);
 
         void addNumber();
         void addString();
@@ -30,6 +33,7 @@ namespace json {
         size_t start = 0;
         size_t current = 0;
 
-        std::string text;
+        std::string text = "";
     };
+
 }
